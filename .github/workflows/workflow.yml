@@ -1,0 +1,22 @@
+name: workflow
+
+on:
+  push:
+  pull_request:
+
+env:
+  POM_XML_DIRECTORY: '.'
+
+jobs:
+  create-release-branch:
+    name: Create Release Branch
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.event.head_commit.message, 'bumped version number to') }}
+    steps:
+      # - run: echo "TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - run: echo "APP_VER=`echo $(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)`" >> $GITHUB_ENV
+      - uses: peterjgrainger/action-create-branch@v2.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          branch: release/${{ env.APP_VER }}
